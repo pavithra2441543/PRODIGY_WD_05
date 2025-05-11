@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Weather App</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #83eaf1, #63a4ff);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .weather-card {
+      background: white;
+      padding: 2rem 3rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      text-align: center;
+      max-width: 400px;
+    }
+
+    .weather-card h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    input {
+      width: 80%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #3b6ea5;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #2b5a89;
+    }
+
+    #result {
+      margin-top: 20px;
+      text-align: left;
+    }
+
+    #result p {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="weather-card">
+    <h1>⛅ Weather App</h1>
+    <input type="text" id="cityInput" placeholder="Enter city name">
+    <br>
+    <button id="searchBtn">Search</button>
+    <br>
+    <button id="locationBtn">📍 Use My Location</button>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const apiKey = "55a373c572d6fae5301da64e178cd525";
+
+    document.getElementById("searchBtn").addEventListener("click", () => {
+      const city = document.getElementById("cityInput").value.trim();
+      if (!city) return alert("Please enter a city name.");
+      fetchWeather(city);
+    });
+
+    document.getElementById("locationBtn").addEventListener("click", () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          const { latitude, longitude } = pos.coords;
+          fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${apiKey}`)
+            .then(res => res.json())
+            .then(showWeather)
+            .catch(err => console.error(err));
+        }, () => alert("Failed to get your location."));
+      } else {
+        alert("Geolocation not supported by your browser.");
+      }
+    });
+
+    function fetchWeather(city) {
+      fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`)
+        .then(res => res.json())
+        .then(showWeather)
+        .catch(err => console.error(err));
+    }
+
+    function showWeather(data) {
+      const result = document.getElementById("result");
+      if (data.cod !== 200) {
+        result.innerHTML = `<p>❌ Error: ${data.message}</p>`;
+        return;
+      }
+
+      result.innerHTML = `
+        <h3>${data.name}, ${data.sys.country}</h3>
+        <p><strong>${data.weather[0].description}</strong></p>
+        <p>🌡️ Temp: ${data.main.temp} °C</p>
+        <p>💧 Humidity: ${data.main.humidity}%</p>
+        <p>🌬️ Wind Speed: ${data.wind.speed} m/s</p>
+      `;
+    }
+  </script>
+</body>
+</html>
